@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cakeshop-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:password@host.docker.internal:5432/cakeshop?schema=public
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      PORT: 4000
+      NODE_ENV: development
+    ports:
+      - "4000:4000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - cakeshop-network
+    command: >
+      sh -c "
+        npx prisma migrate deploy &&
+        npx prisma db seed &&
+        npm start
+      "
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_GRAPHQL_URL: http://localhost:4000/graphql
+    container_name: cakeshop-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_GRAPHQL_URL: http://localhost:4000/graphql
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - cakeshop-network
+
+networks:
+  cakeshop-network:
+    driver: bridge
