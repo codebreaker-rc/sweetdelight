@@ -63,6 +63,7 @@ This is a complete e-commerce solution featuring:
 - Order placement
 - Order history
 - Order status tracking
+- Delivery on doorstep
 
 ## Quick Start
 
